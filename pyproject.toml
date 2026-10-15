@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "subtitle-timing-workbench"
-version = "0.1.0rc1"
+version = "0.1.0"
 description = "Validate local SRT/WebVTT timing and review source-preserving offsets."
 readme = "README.md"
 requires-python = ">=3.11"

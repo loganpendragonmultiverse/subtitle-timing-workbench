@@ -1,13 +1,11 @@
 # Testing
 
-Tests exercise nested overlaps, exact boundaries, out-of-order and invalid durations, reading speed, malformed timestamps, WebVTT settings and NOTE blocks, BOM/CRLF preservation, source tampering, plan tampering, explicit review and existing-output refusal.
+Install development tools with `python -m pip install -e ".[dev]"`. Run `ruff format --check .`, `ruff check .`, `mypy src`, `pytest`, `python -m build` and `python -m pip_audit .`.
 
-`python -m pip install -e ".[dev]"`; `ruff format --check .`; `ruff check .`; `mypy src`; `pytest`; `python -m build`.
+The tests cover nested overlaps, source order, non-positive durations, reading speed, malformed timestamps, WebVTT settings and metadata blocks, inline timestamp shifts, BOM/CRLF preservation, source and plan tampering, explicit review, and refusal to overwrite existing outputs.
 
-Exact execution results and environment evidence are supplied with the RC bundle. CI definitions are not proof of completed remote CI. Public release remains gated on successful remote checks and maintainer security review.
+## Verified environments
 
-## Candidate evidence — 2026-10-15
+On 2026-10-15, the Linux suite passed 24 tests with 96.93% branch-aware coverage. Formatting, lint, strict typing, dependency audit and package builds passed. GitHub CI also passed on Python 3.11 across Windows, macOS and Linux. CodeQL analysis and result upload passed.
 
-Windows Python 3.14.3: 19 tests passed; branch-aware coverage 96.80%; Ruff format/lint and strict mypy passed; wheel and source distribution built.
-
-Linux container and remote CI results are recorded in the release-candidate evidence packet. macOS and Firefox remain unverified unless the remote checks explicitly establish them. No real backup or private browsing was used.
+A native Windows CLI check shifted a synthetic WebVTT cue from 1–3 seconds to 11–13 seconds and its inline timestamp from 2 to 12 seconds. The source file's SHA-256 was unchanged. All fixtures are synthetic.

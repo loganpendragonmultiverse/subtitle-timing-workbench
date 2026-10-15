@@ -2,7 +2,7 @@
 
 Validate local SRT/WebVTT timing and review source-preserving offsets.
 
-Current status: **v0.1.0-rc.1 — review candidate, not a public release**. Original implementation for Logan Pendragon Forge. MIT licensed. No paid services, account or credentials are needed.
+MIT licensed. Runs locally without an account or external service. See [GitHub Releases](https://github.com/loganpendragonmultiverse/subtitle-timing-workbench/releases) for downloads.
 
 ## Three-minute start
 
@@ -14,9 +14,9 @@ subtitle-timing-workbench plan examples/sample.srt --offset-ms 500 --output plan
 subtitle-timing-workbench apply examples/sample.srt --plan plan.json --reviewed --output shifted.srt
 ```
 
-## What this candidate does
+## Features
 
-UTF-8 SRT and WebVTT timing validation, all overlapping cue pairs (including nested cues), source-order evidence, non-positive durations, configurable reading-speed evidence and reviewed global millisecond offsets. Timings are preserved as integer milliseconds; original BOM, line endings, cue text, identifiers, settings and metadata blocks are preserved during export.
+UTF-8 SRT and WebVTT timing validation, all overlapping cue pairs (including nested cues), source-order evidence, non-positive durations, configurable reading-speed evidence and reviewed global millisecond offsets. Timings are preserved as integer milliseconds; original BOM, line endings, identifiers, settings, metadata blocks and visible cue text are preserved during export. Supported WebVTT inline timestamp tags shift by the same offset as cue boundaries and appear in before/after review evidence.
 
 ## Privacy and safe operation
 
@@ -28,4 +28,4 @@ This is a timing workbench, not a full WebVTT specification validator or subtitl
 
 ## Development and support
 
-Requires Python 3.11+; the runtime has no third-party dependencies. Windows and Linux acceptance results are recorded in TESTING.md; macOS remains a CI gate. See [DEVELOPMENT.md](DEVELOPMENT.md), [TESTING.md](TESTING.md), [SECURITY.md](SECURITY.md), and [CHANGELOG.md](CHANGELOG.md). Pull requests receive maintainer review; no contribution or release merges automatically. Maintenance is on demand, with no service-level commitment.
+Requires Python 3.11+; the runtime has no third-party dependencies. Windows and Linux acceptance results are recorded in TESTING.md; the Windows, macOS and Linux CI matrices also passed for this source. See [DEVELOPMENT.md](DEVELOPMENT.md), [TESTING.md](TESTING.md), [SECURITY.md](SECURITY.md), and [CHANGELOG.md](CHANGELOG.md). Pull requests receive maintainer review; no contribution or release merges automatically. Maintenance is on demand, with no service-level commitment.

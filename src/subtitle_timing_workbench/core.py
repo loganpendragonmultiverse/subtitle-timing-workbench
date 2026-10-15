@@ -11,6 +11,7 @@ from typing import Any
 
 MAX_BYTES = 5_000_000
 STAMP = r"(?:\d{2,}:)?\d{2}:\d{2}[.,]\d{3}"
+INLINE_TIMESTAMP = re.compile(rf"<({STAMP})>")
 TIMING = re.compile(rf"^(?P<a>{STAMP}) --> (?P<b>{STAMP})(?P<settings>[ \t].*)?$")
 
 
@@ -61,10 +62,10 @@ def parse(data: bytes) -> dict[str, Any]:
     if block:
         blocks.append(block)
     cues: list[dict[str, Any]] = []
-    for block in blocks:
+    for block_index, block in enumerate(blocks):
         if vtt:
             first = block[0][1]
-            if first.startswith("WEBVTT"):
+            if block_index == 0:
                 if any("-->" in line for _, line in block):
                     raise ValueError("WebVTT header needs a blank separator")
                 continue
@@ -90,6 +91,7 @@ def parse(data: bytes) -> dict[str, Any]:
                 start=start,
                 end=end,
                 text=body,
+                body_lines=[index for index, _ in block[position + 1 :]],
                 characters=len("".join(visible.split())),
                 settings=match["settings"] or "",
             )
@@ -111,6 +113,11 @@ def inspect(data: bytes, cps_limit: float = 20) -> dict[str, Any]:
     for cue in parsed["cues"]:
         duration = cue["end"] - cue["start"]
         cps = round(cue["characters"] * 1000 / duration, 2) if duration > 0 else None
+        inline_timestamps = (
+            [milliseconds(match[1], True) for match in INLINE_TIMESTAMP.finditer(cue["text"])]
+            if parsed["format"] == "vtt"
+            else []
+        )
         findings = []
         if duration <= 0:
             findings.append("non-positive-duration")
@@ -129,6 +136,7 @@ def inspect(data: bytes, cps_limit: float = 20) -> dict[str, Any]:
                 characters=cue["characters"],
                 cps=cps,
                 findings=findings,
+                inline_timestamps_ms=inline_timestamps,
             )
         )
         prior = cue["start"]
@@ -163,6 +171,10 @@ def shifted(data: bytes, offset_ms: int) -> bytes:
     parsed = parse(data)
     vtt = parsed["format"] == "vtt"
     lines = parsed["lines"][:]
+
+    def shift_inline(match: re.Match[str]) -> str:
+        return "<" + stamp(milliseconds(match[1], True) + offset_ms, True) + ">"
+
     for cue in parsed["cues"]:
         old = lines[cue["line"]]
         ending = old[len(old.rstrip("\r\n")) :]
@@ -170,6 +182,9 @@ def shifted(data: bytes, offset_ms: int) -> bytes:
             f"{stamp(cue['start'] + offset_ms, vtt)} --> "
             f"{stamp(cue['end'] + offset_ms, vtt)}{cue['settings']}{ending}"
         )
+        if vtt:
+            for index in cue["body_lines"]:
+                lines[index] = INLINE_TIMESTAMP.sub(shift_inline, lines[index])
     return (b"\xef\xbb\xbf" if parsed["bom"] else b"") + "".join(lines).encode("utf-8")
 
 
