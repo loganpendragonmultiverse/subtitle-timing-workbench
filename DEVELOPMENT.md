@@ -6,7 +6,7 @@ No network, telemetry, account, persistent cache or media access. Only explicitl
 
 This is a timing workbench, not a full WebVTT specification validator or subtitle editor. WebVTT NOTE/STYLE/REGION blocks are preserved without semantic validation. No media playback, translation, per-cue editing, automatic correction, or alignment to audio. Character speed excludes whitespace and markup and counts Unicode code points, not visual graphemes; it is review evidence, not a universal readability rule. Inputs are limited to 5 MB, 20,000 cues and 100,000 overlap pairs; timestamps after shifts must remain within 00..99 hours.
 
-Repository target: `loganpendragonmultiverse/subtitle-timing-workbench`. Candidate version: `v0.1.0-rc.1` (PEP 440: 0.1.0rc1). Source must remain independent of all existing portfolio implementations. Shared community files and pinned CI conventions follow the canonical portfolio.
+Repository target: `loganpendragonmultiverse/subtitle-timing-workbench`. Candidate version: `v0.1.0` (PEP 440: 0.1.0). Source must remain independent of all existing portfolio implementations. Shared community files and pinned CI conventions follow the canonical portfolio.
 
 Install editable development dependencies with `python -m pip install -e ".[dev]"`. Run `ruff format --check .`, `ruff check .`, `mypy src`, `pytest`, `python -m build` and `python -m pip_audit .`. Runtime dependencies are empty.
 

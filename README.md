@@ -2,7 +2,7 @@
 
 Validate local SRT/WebVTT timing and review source-preserving offsets.
 
-Current status: **v0.1.0-rc.1 — review candidate, not a public release**. Original implementation for Logan Pendragon Forge. MIT licensed. No paid services, account or credentials are needed.
+Prepared version: **0.1.0**. Publication is pending review and release gates; consult GitHub Releases for published artifacts. Original implementation for Logan Pendragon Forge. MIT licensed. No paid services, account or credentials are needed.
 
 ## Three-minute start
 
@@ -28,4 +28,4 @@ This is a timing workbench, not a full WebVTT specification validator or subtitl
 
 ## Development and support
 
-Requires Python 3.11+; the runtime has no third-party dependencies. Windows and Linux acceptance results are recorded in TESTING.md; macOS remains a CI gate. See [DEVELOPMENT.md](DEVELOPMENT.md), [TESTING.md](TESTING.md), [SECURITY.md](SECURITY.md), and [CHANGELOG.md](CHANGELOG.md). Pull requests receive maintainer review; no contribution or release merges automatically. Maintenance is on demand, with no service-level commitment.
+Requires Python 3.11+; the runtime has no third-party dependencies. Windows and Linux acceptance results are recorded in TESTING.md; the Windows, macOS and Linux CI matrices also passed for the prepared source. See [DEVELOPMENT.md](DEVELOPMENT.md), [TESTING.md](TESTING.md), [SECURITY.md](SECURITY.md), and [CHANGELOG.md](CHANGELOG.md). Pull requests receive maintainer review; no contribution or release merges automatically. Maintenance is on demand, with no service-level commitment.
