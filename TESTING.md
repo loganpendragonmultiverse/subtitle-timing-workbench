@@ -11,3 +11,8 @@ Exact execution results and environment evidence are supplied with the RC bundle
 Windows Python 3.14.3: 19 tests passed; branch-aware coverage 96.80%; Ruff format/lint and strict mypy passed; wheel and source distribution built.
 
 Linux container and remote CI results are recorded in the release-candidate evidence packet. macOS and Firefox remain unverified unless the remote checks explicitly establish them. No real backup or private browsing was used.
+
+
+## Review-fix verification — 2026-10-15
+
+Independent-review corrections: 24 Linux tests passed with 96.93% branch-aware coverage; Ruff format/lint, strict mypy and wheel/sdist/checksum packaging passed. Regression coverage includes inline timestamp shifts, reviewed application/source preservation, invalid inline clocks and WEBVTT-prefixed identifiers.

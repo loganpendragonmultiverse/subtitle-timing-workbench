@@ -81,3 +81,46 @@ def test_tampered_plan_rejected(tmp_path):
     proposal.write_text(json.dumps(p))
     with pytest.raises(ValueError):
         apply(source, proposal, tmp_path / "b.srt", True)
+
+
+def test_webvtt_inline_timestamps_shift_with_cue_and_appear_in_review():
+    data = (
+        b"\xef\xbb\xbfWEBVTT\r\n\r\nWEBVTT-example\r\n"
+        b"00:00:01.000 --> 00:00:03.000 align:start\r\n"
+        b"<v Speaker><00:00:01.500>One <00:02.000><b>two</b>\r\n"
+    )
+    proposal = plan(data, 10000)
+    assert proposal["before"]["cues"][0]["inline_timestamps_ms"] == [1500, 2000]
+    assert proposal["after"]["cues"][0]["inline_timestamps_ms"] == [11500, 12000]
+    output = shifted(data, 10000)
+    assert b"WEBVTT-example\r\n00:00:11.000 --> 00:00:13.000 align:start\r\n" in output
+    assert b"<v Speaker><00:00:11.500>One <00:00:12.000><b>two</b>\r\n" in output
+    assert output.startswith(b"\xef\xbb\xbfWEBVTT\r\n")
+
+
+def test_webvtt_header_prefix_is_valid_as_later_cue_identifier():
+    data = b"WEBVTT header description\n\nWEBVTT-example\n00:01.000 --> 00:03.000\n<00:02.000>x\n"
+    assert len(parse(data)["cues"]) == 1
+    assert inspect(shifted(data, -500))["cues"][0]["inline_timestamps_ms"] == [1500]
+
+
+@pytest.mark.parametrize("tag", [b"<00:00:02,000>", b"<00:99:02.000>"])
+def test_invalid_inline_timestamp_refuses_plan_before_export(tmp_path, tag):
+    data = b"WEBVTT\n\n00:00:01.000 --> 00:00:03.000\n" + tag + b"x\n"
+    source = tmp_path / "source.vtt"
+    source.write_bytes(data)
+    with pytest.raises(ValueError):
+        plan(source.read_bytes(), 10000)
+    assert source.read_bytes() == data
+
+
+def test_reviewed_apply_moves_inline_timestamps_and_preserves_original(tmp_path):
+    data = b"WEBVTT\n\n00:00:01.000 --> 00:00:03.000\nA<00:00:02.000>B\n"
+    source = tmp_path / "a.vtt"
+    source.write_bytes(data)
+    proposal = tmp_path / "plan.json"
+    proposal.write_text(json.dumps(plan(data, 10000)))
+    output = tmp_path / "b.vtt"
+    apply(source, proposal, output, True)
+    assert b"<00:00:12.000>" in output.read_bytes()
+    assert source.read_bytes() == data

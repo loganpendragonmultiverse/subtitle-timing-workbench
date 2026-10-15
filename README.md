@@ -2,7 +2,7 @@
 
 Validate local SRT/WebVTT timing and review source-preserving offsets.
 
-Prepared version: **0.1.0**. Publication is pending review and release gates; consult GitHub Releases for published artifacts. Original implementation for Logan Pendragon Forge. MIT licensed. No paid services, account or credentials are needed.
+Version: **0.1.0**. [GitHub Releases](https://github.com/loganpendragonmultiverse/subtitle-timing-workbench/releases) identifies published downloads and release status. Original implementation for Logan Pendragon Forge. MIT licensed. No paid services, account or credentials are needed.
 
 ## Three-minute start
 
@@ -16,7 +16,7 @@ subtitle-timing-workbench apply examples/sample.srt --plan plan.json --reviewed 
 
 ## What this candidate does
 
-UTF-8 SRT and WebVTT timing validation, all overlapping cue pairs (including nested cues), source-order evidence, non-positive durations, configurable reading-speed evidence and reviewed global millisecond offsets. Timings are preserved as integer milliseconds; original BOM, line endings, cue text, identifiers, settings and metadata blocks are preserved during export.
+UTF-8 SRT and WebVTT timing validation, all overlapping cue pairs (including nested cues), source-order evidence, non-positive durations, configurable reading-speed evidence and reviewed global millisecond offsets. Timings are preserved as integer milliseconds; original BOM, line endings, identifiers, settings, metadata blocks and visible cue text are preserved during export. Supported WebVTT inline timestamp tags shift by the same offset as cue boundaries and appear in before/after review evidence.
 
 ## Privacy and safe operation
 
