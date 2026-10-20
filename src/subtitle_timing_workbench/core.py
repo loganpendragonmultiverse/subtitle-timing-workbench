@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 MAX_BYTES = 5_000_000
+MAX_PLAN_BYTES = 30_000_000
 STAMP = r"(?:\d{2,}:)?\d{2}:\d{2}[.,]\d{3}"
 INLINE_TIMESTAMP = re.compile(rf"<({STAMP})>")
 TIMING = re.compile(rf"^(?P<a>{STAMP}) --> (?P<b>{STAMP})(?P<settings>[ \t].*)?$")
@@ -119,6 +120,13 @@ def inspect(data: bytes, cps_limit: float = 20) -> dict[str, Any]:
             else []
         )
         findings = []
+        if any(value <= cue["start"] or value >= cue["end"] for value in inline_timestamps):
+            findings.append("inline-timestamp-outside-cue")
+        if any(
+            current <= previous
+            for previous, current in zip(inline_timestamps, inline_timestamps[1:])
+        ):
+            findings.append("inline-timestamp-out-of-order")
         if duration <= 0:
             findings.append("non-positive-duration")
         if cue["start"] < prior:
@@ -201,18 +209,73 @@ def plan(data: bytes, offset_ms: int) -> dict[str, Any]:
 
 
 def exclusive(path: Path, data: bytes) -> None:
+    if path.exists() or path.is_symlink():
+        raise FileExistsError(f"Output already exists: {path}")
     with path.open("xb") as handle:
         handle.write(data)
+
+
+def read_bounded(path: Path, limit: int) -> bytes:
+    with path.open("rb") as handle:
+        data = handle.read(limit + 1)
+    if len(data) > limit:
+        raise ValueError("Input exceeds limit")
+    return data
+
+
+def _unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("Plan contains duplicate JSON keys")
+        result[key] = value
+    return result
+
+
+def _plan_json(data: bytes) -> Any:
+    text = data.decode("utf-8")
+    depth = 0
+    quoted = False
+    escaped = False
+    for character in text:
+        if quoted:
+            if escaped:
+                escaped = False
+            elif character == "\\":
+                escaped = True
+            elif character == '"':
+                quoted = False
+        elif character == '"':
+            quoted = True
+        elif character in "{[":
+            depth += 1
+            if depth > 100:
+                raise ValueError("Plan nesting exceeds 100 levels")
+        elif character in "}]":
+            depth -= 1
+    return json.loads(text, object_pairs_hook=_unique_object)
+
+
+def _canonical(value: Any) -> str:
+    return json.dumps(
+        value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False
+    )
 
 
 def apply(source: Path, plan_path: Path, output: Path, reviewed: bool) -> None:
     if not reviewed:
         raise ValueError("Review the plan before --reviewed export")
-    if source.stat().st_size > MAX_BYTES or plan_path.stat().st_size > 30_000_000:
-        raise ValueError("Input exceeds limit")
-    data = source.read_bytes()
-    candidate = json.loads(plan_path.read_text("utf-8"))
-    expected = plan(data, candidate.get("offset_ms"))
-    if candidate != expected:
+    data = read_bounded(source, MAX_BYTES)
+    try:
+        candidate = _plan_json(read_bounded(plan_path, MAX_PLAN_BYTES))
+    except RecursionError as exc:
+        raise ValueError("Plan nesting exceeds supported JSON depth") from exc
+    if not isinstance(candidate, dict):
+        raise ValueError("Plan must be a JSON object")
+    offset = candidate.get("offset_ms")
+    if isinstance(offset, bool) or not isinstance(offset, int):
+        raise ValueError("Plan offset must be integer milliseconds")
+    expected = plan(data, offset)
+    if _canonical(candidate) != _canonical(expected):
         raise ValueError("Plan changed or source differs; generate and review again")
     exclusive(output, shifted(data, expected["offset_ms"]))

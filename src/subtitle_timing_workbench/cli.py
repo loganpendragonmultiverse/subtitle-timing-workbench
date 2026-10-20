@@ -6,7 +6,7 @@ import argparse
 import json
 from pathlib import Path
 
-from .core import MAX_BYTES, apply, exclusive, inspect, plan
+from .core import MAX_BYTES, MAX_PLAN_BYTES, apply, exclusive, inspect, plan, read_bounded
 
 
 def main() -> int:
@@ -28,15 +28,16 @@ def main() -> int:
         if args.command == "apply":
             apply(args.source, args.plan, args.output, args.reviewed)
         else:
-            if args.source.stat().st_size > MAX_BYTES:
-                raise ValueError("Subtitle exceeds 5 MB limit")
-            data = args.source.read_bytes()
+            data = read_bounded(args.source, MAX_BYTES)
             report = (
                 inspect(data, args.cps) if args.command == "inspect" else plan(data, args.offset_ms)
             )
-            exclusive(
-                args.output, (json.dumps(report, indent=2, ensure_ascii=False) + "\n").encode()
-            )
+            rendered = (
+                json.dumps(report, indent=2, ensure_ascii=False, allow_nan=False) + "\n"
+            ).encode()
+            if args.command == "plan" and len(rendered) > MAX_PLAN_BYTES:
+                raise ValueError("Plan exceeds 30 MB limit; split this subtitle")
+            exclusive(args.output, rendered)
     except (OSError, ValueError, KeyError, TypeError) as error:
         parser.exit(2, f"subtitle-timing-workbench: {error}\n")
     return 0
