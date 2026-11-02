@@ -16,7 +16,7 @@ subtitle-timing-workbench apply examples/sample.srt --plan plan.json --reviewed 
 
 ## Features
 
-UTF-8 SRT and WebVTT timing validation, all overlapping cue pairs (including nested cues), source-order evidence, non-positive durations, configurable reading-speed evidence and reviewed global millisecond offsets. Timings are preserved as integer milliseconds; original BOM, line endings, identifiers, settings, metadata blocks and visible cue text are preserved during export. Supported WebVTT inline timestamp tags shift by the same offset as cue boundaries and appear in before/after review evidence.
+UTF-8 SRT and WebVTT timing validation, all overlapping cue pairs (including nested cues), source-order evidence, non-positive durations, configurable reading-speed evidence and reviewed global millisecond offsets. Timings are preserved as integer milliseconds; original BOM, line endings, identifiers, settings, metadata blocks and visible cue text are preserved during export. Supported WebVTT inline timestamp tags shift by the same offset as cue boundaries and appear in before/after review evidence. Tags outside their cue boundaries or in non-increasing order are identified for review.
 
 ## Privacy and safe operation
 
@@ -24,8 +24,15 @@ No network, telemetry, account, persistent cache or media access. Only explicitl
 
 ## Boundaries
 
-This is a timing workbench, not a full WebVTT specification validator or subtitle editor. WebVTT NOTE/STYLE/REGION blocks are preserved without semantic validation. No media playback, translation, per-cue editing, automatic correction, or alignment to audio. Character speed excludes whitespace and markup and counts Unicode code points, not visual graphemes; it is review evidence, not a universal readability rule. Inputs are limited to 5 MB, 20,000 cues and 100,000 overlap pairs; timestamps after shifts must remain within 00..99 hours.
+This is a timing workbench, not a full WebVTT specification validator or subtitle editor. WebVTT NOTE/STYLE/REGION blocks are preserved without semantic validation. No media playback, translation, per-cue editing, automatic correction, or alignment to audio. Character speed excludes whitespace and markup and counts Unicode code points, not visual graphemes; it is review evidence, not a universal readability rule. Actual file reads are bounded. Inputs are limited to 5 MB, 20,000 cues and 100,000 overlap pairs; review plans are limited to 30 MB and 100 nesting levels and reject duplicate keys, non-object roots and altered evidence types; timestamps after shifts must remain within 00..99 hours.
 
 ## Development and support
 
 Requires Python 3.11+; the runtime has no third-party dependencies. Windows and Linux acceptance results are recorded in TESTING.md; the Windows, macOS and Linux CI matrices also passed for this source. See [DEVELOPMENT.md](DEVELOPMENT.md), [TESTING.md](TESTING.md), [SECURITY.md](SECURITY.md), and [CHANGELOG.md](CHANGELOG.md). Pull requests receive maintainer review; no contribution or release merges automatically. Maintenance is on demand, with no service-level commitment.
+
+Installed wheels include the four authority documents and synthetic SRT sample at
+`share/doc/subtitle-timing-workbench` under Python's data prefix. Locate it with
+`python -c "import sysconfig; print(sysconfig.get_path('data'))"`. Run inspect, plan
+and reviewed apply against that installed sample, writing only new disposable outputs.
+Release acceptance installs exact tag wheel/sdist distributions in fresh environments,
+checks installed documentation/example hashes and repeats those CLI flows outside source.

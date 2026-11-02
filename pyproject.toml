@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "subtitle-timing-workbench"
-version = "0.1.0"
+version = "0.1.1"
 description = "Validate local SRT/WebVTT timing and review source-preserving offsets."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -38,3 +38,7 @@ select = ["E4", "E7", "E9", "F", "I"]
 
 [tool.coverage.run]
 omit = ["src/*/__main__.py"]
+
+[tool.setuptools.data-files]
+"share/doc/subtitle-timing-workbench" = ["README.md", "CHANGELOG.md", "DEVELOPMENT.md", "TESTING.md"]
+"share/doc/subtitle-timing-workbench/examples" = ["examples/sample.srt"]
